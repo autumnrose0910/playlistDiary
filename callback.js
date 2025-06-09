@@ -1,0 +1,38 @@
+const clientId = 'YOUR_CLIENT_ID';
+const redirectUri = 'https://your-vercel-site.vercel.app/callback'; // exact match with Spotify app
+const codeVerifier = localStorage.getItem('code_verifier');
+
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+
+if (!code) {
+  console.error("No code found in URL");
+} else {
+  const body = new URLSearchParams({
+    client_id: clientId,
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: redirectUri,
+    code_verifier: codeVerifier,
+  });
+
+  fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body.toString(),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+        window.location.href = '/'; // go back to main page
+      } else {
+        console.error("Failed to get access token", data);
+      }
+    })
+    .catch(err => {
+      console.error("Error during token fetch:", err);
+    });
+}
