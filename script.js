@@ -1,5 +1,3 @@
-// script.js (Updated to include playlist name, cover, and metadata stats)
-
 window.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('access_token');
     const loginBtn = document.getElementById('loginBtn');
@@ -49,14 +47,10 @@ window.addEventListener('DOMContentLoaded', () => {
       const durations = trackItems.map(item => item.track.duration_ms);
       const popularity = trackItems.map(item => item.track.popularity);
       const explicitCount = trackItems.filter(item => item.track.explicit).length;
-      const artistIds = [...new Set(trackItems.flatMap(item => item.track.artists.map(a => a.id)))].slice(0, 50);
   
-      const artistRes = await fetch(`https://api.spotify.com/v1/artists?ids=${artistIds.join(',')}`, { headers });
-      const artistData = await artistRes.json();
-  
-      const allGenres = artistData.artists.flatMap(a => a.genres);
-      const genreCounts = {};
-      allGenres.forEach(g => genreCounts[g] = (genreCounts[g] || 0) + 1);
+      const artistNames = trackItems.flatMap(item => item.track.artists.map(a => a.name));
+      const artistCounts = {};
+      artistNames.forEach(name => artistCounts[name] = (artistCounts[name] || 0) + 1);
   
       return {
         playlistName: playlistMeta.name,
@@ -66,7 +60,7 @@ window.addEventListener('DOMContentLoaded', () => {
         avgDuration: (durations.reduce((a, b) => a + b, 0) / durations.length / 60000).toFixed(2),
         avgPopularity: (popularity.reduce((a, b) => a + b, 0) / popularity.length).toFixed(1),
         explicitPercent: ((explicitCount / trackItems.length) * 100).toFixed(0),
-        topGenres: Object.entries(genreCounts)
+        topArtists: Object.entries(artistCounts)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5)
       };
@@ -83,7 +77,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-    const genresList = stats.topGenres.map(g => `<li>${g[0]} (${g[1]} tracks)</li>`).join('');
+    const artistList = stats.topArtists.map(a => `<li>${a[0]} (${a[1]} tracks)</li>`).join('');
   
     resultContainer.innerHTML = `
       <div class="playlist-header">
@@ -97,8 +91,8 @@ window.addEventListener('DOMContentLoaded', () => {
         <li><strong>Average Popularity:</strong> ${stats.avgPopularity}/100</li>
         <li><strong>Explicit Content:</strong> ${stats.explicitPercent}%</li>
       </ul>
-      <h3>Top Genres</h3>
-      <ul>${genresList}</ul>
+      <h3>Top Artists</h3>
+      <ul>${artistList}</ul>
     `;
-  }
+  }  
   
