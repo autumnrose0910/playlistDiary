@@ -1,5 +1,5 @@
 const clientId = '202e43b25213442bb4c7e81dce7ba60f';
-const redirectUri = 'https://playlist-diary.vercel.app/callback'; // exact match with Spotify app
+const redirectUri = 'https://playlist-diary.vercel.app/callback';
 const codeVerifier = localStorage.getItem('code_verifier');
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -7,6 +7,7 @@ const code = urlParams.get('code');
 
 if (!code) {
   console.error("No code found in URL");
+  document.body.innerText = "Authorization code not found.";
 } else {
   const body = new URLSearchParams({
     client_id: clientId,
@@ -27,12 +28,16 @@ if (!code) {
     .then(data => {
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token);
-        window.location.href = '/'; // go back to main page
+        // Optional:
+        // localStorage.setItem('refresh_token', data.refresh_token);
+        window.location.href = '/'; // or wherever you want to go next
       } else {
         console.error("Failed to get access token", data);
+        document.body.innerText = "Authorization failed. Please try again.";
       }
     })
     .catch(err => {
       console.error("Error during token fetch:", err);
+      document.body.innerText = "Something went wrong. Please try again.";
     });
 }
