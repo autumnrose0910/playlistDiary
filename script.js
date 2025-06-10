@@ -32,33 +32,46 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   
   function extractPlaylistId(url) {
-    const match = url.match(/playlist\/([a-zA-Z0-9]+)(\?si=.*)?/);
+    const match = url.match(/playlist\/([a-zA-Z0-9]+)(\?|$)/);
     return match ? match[1] : null;
-  }
+  }  
 
   
   async function fetchAndAnalyzePlaylist(playlistId, token) {
     try {
       const headers = { Authorization: `Bearer ${token}` };
   
-    //find tracks
-      const trackRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-        headers
-      });
-      const trackData = await trackRes.json();
+      // Check playlist ID
+      console.log("Using playlist ID:", playlistId);
   
+      const trackRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { headers });
+      
+      if (!trackRes.ok) {
+        const err = await trackRes.json();
+        console.error("Track fetch failed:", err);
+        return null;
+      }
+  
+      const trackData = await trackRes.json();
       const trackIds = trackData.items
         .map(item => item.track && item.track.id)
         .filter(id => id !== null)
-        .slice(0, 100); //temp limit for testing
+        .slice(0, 100);
   
-      //audio features
-      const audioRes = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`, {
-        headers
-      });
+      if (trackIds.length === 0) {
+        console.warn("No tracks found!");
+        return null;
+      }
+  
+      const audioRes = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`, { headers });
+      
+      if (!audioRes.ok) {
+        const err = await audioRes.json();
+        console.error("Audio features fetch failed:", err);
+        return null;
+      }
+  
       const audioData = await audioRes.json();
-  
-      // averages
       const stats = {
         count: audioData.audio_features.length,
         avgTempo: 0,
@@ -68,10 +81,12 @@ window.addEventListener('DOMContentLoaded', () => {
       };
   
       audioData.audio_features.forEach(f => {
-        stats.avgTempo += f.tempo;
-        stats.avgDanceability += f.danceability;
-        stats.avgEnergy += f.energy;
-        stats.avgValence += f.valence;
+        if (f) {
+          stats.avgTempo += f.tempo;
+          stats.avgDanceability += f.danceability;
+          stats.avgEnergy += f.energy;
+          stats.avgValence += f.valence;
+        }
       });
   
       const n = audioData.audio_features.length;
@@ -86,6 +101,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return null;
     }
   }
+  
 
   
   function displayStats(stats) {
