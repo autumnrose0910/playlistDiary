@@ -19,17 +19,22 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   
     analyzeBtn.addEventListener('click', async () => {
-      const url = playlistInput.value.trim();
-      const playlistId = extractPlaylistId(url);
-      if (!playlistId) {
-        resultContainer.innerHTML = "<p>Please enter a valid Spotify playlist URL.</p>";
-        return;
-      }
-  
-      resultContainer.innerHTML = "<p>Loading playlist info...</p>";
-      const stats = await fetchAndAnalyzePlaylist(playlistId, token);
-      displayStats(stats);
-    });
+        const url = playlistInput.value.trim();
+        const playlistId = extractPlaylistId(url);
+        console.log("URL entered:", url);
+        console.log("Extracted playlist ID:", playlistId);
+      
+        if (!playlistId) {
+          resultContainer.innerHTML = "<p>Please enter a valid Spotify playlist URL.</p>";
+          return;
+        }
+      
+        resultContainer.innerHTML = "<p>Loading playlist info...</p>";
+        const stats = await fetchAndAnalyzePlaylist(playlistId, token);
+        console.log("Fetched stats:", stats);
+        displayStats(stats);
+      });
+      
   });
   
   function extractPlaylistId(url) {
