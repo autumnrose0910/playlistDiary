@@ -37,59 +37,86 @@ window.addEventListener('DOMContentLoaded', () => {
   }  
 
   
+  function chunkArray(arr, size) {
+    const result = [];
+    for (let i = 0; i < arr.length; i += size) {
+      result.push(arr.slice(i, i + size));
+    }
+    return result;
+  }
+  
+  async function fetchAudioFeatures(trackIds, headers) {
+    const chunks = chunkArray(trackIds, 10); // Safer size for debugging
+    let allFeatures = [];
+  
+    for (const chunk of chunks) {
+      const url = `https://api.spotify.com/v1/audio-features?ids=${chunk.join(',')}`;
+      const res = await fetch(url, { headers });
+  
+      if (!res.ok) {
+        const err = await res.json();
+        console.warn("Audio feature fetch failed for chunk:", chunk, err);
+        continue; // Skip this chunk
+      }
+  
+      const data = await res.json();
+      const validFeatures = data.audio_features.filter(f => f); // Remove nulls
+      allFeatures = allFeatures.concat(validFeatures);
+    }
+  
+    return allFeatures;
+  }
+  
   async function fetchAndAnalyzePlaylist(playlistId, token) {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-  
-      // Check playlist ID
       console.log("Using playlist ID:", playlistId);
   
+      // Fetch playlist tracks
       const trackRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { headers });
-      
       if (!trackRes.ok) {
         const err = await trackRes.json();
         console.error("Track fetch failed:", err);
         return null;
       }
   
+      const trackData = await trackRes.json();
+  
       const trackIds = trackData.items
-      .map(item => item.track?.id)
-      .filter(id => id && id.length === 22)
-      .slice(0, 100);
-    
+        .map(item => item?.track?.id)
+        .filter(id => typeof id === 'string' && id.length === 22)
+        .slice(0, 100); // Optional limit
   
       if (trackIds.length === 0) {
-        console.warn("No tracks found!");
+        console.warn("No valid track IDs found.");
         return null;
       }
   
-      const audioRes = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`, { headers });
-      
-      if (!audioRes.ok) {
-        const err = await audioRes.json();
-        console.error("Audio features fetch failed:", err);
+      // Fetch audio features in chunks
+      const audioFeatures = await fetchAudioFeatures(trackIds, headers);
+  
+      if (audioFeatures.length === 0) {
+        alert("No audio features could be fetched. Some tracks may be restricted.");
         return null;
       }
   
-      const audioData = await audioRes.json();
+      // Compute stats
       const stats = {
-        count: audioData.audio_features.length,
+        count: audioFeatures.length,
         avgTempo: 0,
         avgDanceability: 0,
         avgEnergy: 0,
         avgValence: 0,
       };
   
-      audioData.audio_features.forEach(f => {
-        if (f) {
-          stats.avgTempo += f.tempo;
-          stats.avgDanceability += f.danceability;
-          stats.avgEnergy += f.energy;
-          stats.avgValence += f.valence;
-        }
+      audioFeatures.forEach(f => {
+        stats.avgTempo += f.tempo;
+        stats.avgDanceability += f.danceability;
+        stats.avgEnergy += f.energy;
+        stats.avgValence += f.valence;
       });
   
-      const n = audioData.audio_features.length;
+      const n = audioFeatures.length;
       for (let key in stats) {
         if (key !== "count") stats[key] = (stats[key] / n).toFixed(2);
       }
@@ -101,6 +128,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return null;
     }
   }
+  
   
 
   
