@@ -1,7 +1,7 @@
 const clientId = '202e43b25213442bb4c7e81dce7ba60f';
 const redirectUri = 'https://playlist-diary.vercel.app/callback'; // Must match your Spotify Dev settings
 
-// Generate a random string for PKCE
+// PKCE string gen
 function generateRandomString(length) {
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   return Array.from(crypto.getRandomValues(new Uint8Array(length)))
@@ -9,7 +9,7 @@ function generateRandomString(length) {
     .join('');
 }
 
-// Create a SHA256 hash, then base64-url encode it
+// create a SHA256 hash, then base64-url encode it
 async function generateCodeChallenge(codeVerifier) {
   const encoder = new TextEncoder();
   const data = encoder.encode(codeVerifier);
@@ -20,7 +20,7 @@ async function generateCodeChallenge(codeVerifier) {
     .replace(/=+$/, '');
 }
 
-// Redirect to Spotify’s Auth URL
+//  Auth URL redirect
 async function redirectToSpotifyLogin() {
   const codeVerifier = generateRandomString(128);
   const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -35,6 +35,7 @@ async function redirectToSpotifyLogin() {
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,
   });
+  
 
   window.location.href = `https://accounts.spotify.com/authorize?${params}`;
 }

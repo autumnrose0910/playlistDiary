@@ -2,7 +2,6 @@ const token = localStorage.getItem('access_token');
 if (token) {
   document.getElementById('loginBtn').style.display = 'none';
   document.getElementById('playlistSection').style.display = 'block';
-  // Optional: auto-fill playlist or fetch user’s own playlists
 }
 
 
@@ -43,7 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
   
-      // 1. Fetch playlist tracks
+    //find tracks
       const trackRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
         headers
       });
@@ -52,15 +51,15 @@ window.addEventListener('DOMContentLoaded', () => {
       const trackIds = trackData.items
         .map(item => item.track && item.track.id)
         .filter(id => id !== null)
-        .slice(0, 100); // limit to 100 for now
+        .slice(0, 100); //temp limit for testing
   
-      // 2. Fetch audio features
+      //audio features
       const audioRes = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`, {
         headers
       });
       const audioData = await audioRes.json();
   
-      // 3. Analyze averages
+      // averages
       const stats = {
         count: audioData.audio_features.length,
         avgTempo: 0,
