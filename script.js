@@ -1,3 +1,4 @@
+
 window.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('access_token');
     const loginBtn = document.getElementById('loginBtn');
@@ -12,24 +13,16 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   
     analyzeBtn.addEventListener('click', async () => {
-      if (!token) {
-        resultContainer.innerHTML = "<p>Please log in to Spotify first.</p>";
-        return;
-      }
-  
       const url = playlistInput.value.trim();
       const playlistId = extractPlaylistId(url);
-      console.log("URL entered:", url);
-      console.log("Extracted playlist ID:", playlistId);
   
       if (!playlistId) {
-        resultContainer.innerHTML = "<p>Please enter a valid Spotify playlist URL.</p>";
+        resultContainer.innerHTML = '<p>Please enter a valid Spotify playlist URL.</p>';
         return;
       }
   
-      resultContainer.innerHTML = "<p>Loading playlist info...</p>";
-      const stats = await fetchAndAnalyzePlaylist(playlistId, token);
-      console.log("Fetched stats:", stats);
+      resultContainer.innerHTML = '<p>Loading playlist info...</p>';
+      const stats = await fetchPlaylistMetadata(playlistId, token);
       displayStats(stats);
     });
   });
@@ -39,68 +32,37 @@ window.addEventListener('DOMContentLoaded', () => {
     return match ? match[1] : null;
   }
   
-  function chunkArray(array, size) {
-    const chunks = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
-  }
+  async function fetchPlaylistMetadata(playlistId, token) {
+    const headers = { Authorization: `Bearer ${token}` };
   
-  async function fetchAndAnalyzePlaylist(playlistId, token) {
     try {
-      const headers = { Authorization: `Bearer ${token}` };
-      console.log("Using playlist ID:", playlistId);
+      const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { headers });
+      const data = await res.json();
   
-      // Fetch tracks
-      const trackRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { headers });
-      const trackData = await trackRes.json();
+      const trackItems = data.items
+        .filter(item => item.track && item.track.id && item.track.artists.length > 0);
   
-      const trackIds = trackData.items
-        .map(item => item.track && item.track.id)
-        .filter(id => id !== null && id !== undefined)
-        .slice(0, 100); // limit for now
+      const durations = trackItems.map(item => item.track.duration_ms);
+      const popularity = trackItems.map(item => item.track.popularity);
+      const artistIds = [...new Set(trackItems.flatMap(item => item.track.artists.map(a => a.id)))].slice(0, 50);
   
-      const chunks = chunkArray(trackIds, 50);
-      let allFeatures = [];
+      const artistRes = await fetch(`https://api.spotify.com/v1/artists?ids=${artistIds.join(',')}`, { headers });
+      const artistData = await artistRes.json();
   
-      for (const chunk of chunks) {
-        const res = await fetch(`https://api.spotify.com/v1/audio-features?ids=${chunk.join(',')}`, { headers });
-        const data = await res.json();
+      const allGenres = artistData.artists.flatMap(a => a.genres);
+      const genreCounts = {};
+      allGenres.forEach(g => genreCounts[g] = (genreCounts[g] || 0) + 1);
   
-        if (res.status !== 200 || data.error) {
-          console.warn("Audio feature fetch failed for chunk:", chunk, data);
-          continue;
-        }
-  
-        allFeatures.push(...(data.audio_features || []).filter(f => f));
-      }
-  
-      if (allFeatures.length === 0) return null;
-  
-      const stats = {
-        count: allFeatures.length,
-        avgTempo: 0,
-        avgDanceability: 0,
-        avgEnergy: 0,
-        avgValence: 0,
+      return {
+        trackCount: trackItems.length,
+        avgDuration: (durations.reduce((a, b) => a + b, 0) / durations.length / 60000).toFixed(2),
+        avgPopularity: (popularity.reduce((a, b) => a + b, 0) / popularity.length).toFixed(1),
+        topGenres: Object.entries(genreCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
       };
-  
-      allFeatures.forEach(f => {
-        stats.avgTempo += f.tempo;
-        stats.avgDanceability += f.danceability;
-        stats.avgEnergy += f.energy;
-        stats.avgValence += f.valence;
-      });
-  
-      const n = allFeatures.length;
-      for (let key in stats) {
-        if (key !== "count") stats[key] = (stats[key] / n).toFixed(2);
-      }
-  
-      return stats;
     } catch (err) {
-      console.error("Error analyzing playlist:", err);
+      console.error('Error fetching playlist metadata:', err);
       return null;
     }
   }
@@ -108,19 +70,21 @@ window.addEventListener('DOMContentLoaded', () => {
   function displayStats(stats) {
     const resultContainer = document.getElementById('resultContainer');
     if (!stats) {
-      resultContainer.innerHTML = "<p>Oops! Couldn't fetch playlist data.</p>";
+      resultContainer.innerHTML = '<p>Oops! Couldn\'t fetch playlist data.</p>';
       return;
     }
   
+    const genresList = stats.topGenres.map(g => `<li>${g[0]} (${g[1]} tracks)</li>`).join('');
+  
     resultContainer.innerHTML = `
-      <h2>Playlist Analysis</h2>
+      <h2>Playlist Metadata Analysis</h2>
       <ul>
-        <li><strong>Total Tracks:</strong> ${stats.count}</li>
-        <li><strong>Average Tempo:</strong> ${stats.avgTempo} BPM</li>
-        <li><strong>Average Danceability:</strong> ${stats.avgDanceability}</li>
-        <li><strong>Average Energy:</strong> ${stats.avgEnergy}</li>
-        <li><strong>Average Positivity (Valence):</strong> ${stats.avgValence}</li>
+        <li><strong>Total Tracks:</strong> ${stats.trackCount}</li>
+        <li><strong>Average Duration:</strong> ${stats.avgDuration} minutes</li>
+        <li><strong>Average Popularity:</strong> ${stats.avgPopularity}/100</li>
       </ul>
+      <h3>Top Genres</h3>
+      <ul>${genresList}</ul>
     `;
   }
   
