@@ -1,3 +1,4 @@
+// script.js (Updated to include playlist name, cover, and metadata stats)
 
 window.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('access_token');
@@ -36,6 +37,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const headers = { Authorization: `Bearer ${token}` };
   
     try {
+      const playlistRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, { headers });
+      const playlistMeta = await playlistRes.json();
+  
       const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { headers });
       const data = await res.json();
   
@@ -44,6 +48,7 @@ window.addEventListener('DOMContentLoaded', () => {
   
       const durations = trackItems.map(item => item.track.duration_ms);
       const popularity = trackItems.map(item => item.track.popularity);
+      const explicitCount = trackItems.filter(item => item.track.explicit).length;
       const artistIds = [...new Set(trackItems.flatMap(item => item.track.artists.map(a => a.id)))].slice(0, 50);
   
       const artistRes = await fetch(`https://api.spotify.com/v1/artists?ids=${artistIds.join(',')}`, { headers });
@@ -54,9 +59,13 @@ window.addEventListener('DOMContentLoaded', () => {
       allGenres.forEach(g => genreCounts[g] = (genreCounts[g] || 0) + 1);
   
       return {
+        playlistName: playlistMeta.name,
+        playlistImage: playlistMeta.images[0]?.url,
+        ownerName: playlistMeta.owner.display_name,
         trackCount: trackItems.length,
         avgDuration: (durations.reduce((a, b) => a + b, 0) / durations.length / 60000).toFixed(2),
         avgPopularity: (popularity.reduce((a, b) => a + b, 0) / popularity.length).toFixed(1),
+        explicitPercent: ((explicitCount / trackItems.length) * 100).toFixed(0),
         topGenres: Object.entries(genreCounts)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5)
@@ -77,11 +86,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const genresList = stats.topGenres.map(g => `<li>${g[0]} (${g[1]} tracks)</li>`).join('');
   
     resultContainer.innerHTML = `
-      <h2>Playlist Metadata Analysis</h2>
+      <div class="playlist-header">
+        <img src="${stats.playlistImage}" alt="Playlist cover" style="width: 150px; border-radius: 12px; margin-bottom: 10px;"/>
+        <h2>${stats.playlistName}</h2>
+        <p>by ${stats.ownerName}</p>
+      </div>
       <ul>
         <li><strong>Total Tracks:</strong> ${stats.trackCount}</li>
         <li><strong>Average Duration:</strong> ${stats.avgDuration} minutes</li>
         <li><strong>Average Popularity:</strong> ${stats.avgPopularity}/100</li>
+        <li><strong>Explicit Content:</strong> ${stats.explicitPercent}%</li>
       </ul>
       <h3>Top Genres</h3>
       <ul>${genresList}</ul>
