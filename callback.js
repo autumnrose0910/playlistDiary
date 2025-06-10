@@ -28,9 +28,8 @@ if (!code) {
     .then(data => {
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token);
-        // Optional:
-        // localStorage.setItem('refresh_token', data.refresh_token);
-        window.location.href = '/'; // or wherever you want to go next
+
+        window.location.href = '/';
       } else {
         console.error("Failed to get access token", data);
         document.body.innerText = "Authorization failed. Please try again.";

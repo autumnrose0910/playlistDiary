@@ -102,15 +102,6 @@ window.addEventListener('DOMContentLoaded', () => {
             ${artistList}
           </div>
         </div>
-  
-        <style>
-          @media (min-width: 768px) {
-            .results-grid {
-              flex-direction: row;
-              justify-content: space-between;
-            }
-          }
-        </style>
       </div>
     `;
   }
