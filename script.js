@@ -82,7 +82,7 @@ window.addEventListener('DOMContentLoaded', () => {
     resultContainer.innerHTML = `
       <div class="results-flex" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; margin: auto; padding: 1rem;">
   
-        <div style="display: flex; flex-direction: column; gap: 1rem;" class="results-grid">
+        <div class="results-grid">
           <div class="playlist-info" style="flex: 1; text-align: center;">
             <img src="${stats.playlistImage}" alt="Playlist cover" style="width: 100%; max-width: 180px; border-radius: 12px; margin-bottom: 10px;"/>
             <h2 style="margin: 0; font-size: 1.2rem;">${stats.playlistName}</h2>
