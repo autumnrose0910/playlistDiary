@@ -52,11 +52,11 @@ window.addEventListener('DOMContentLoaded', () => {
         return null;
       }
   
-      const trackData = await trackRes.json();
       const trackIds = trackData.items
-        .map(item => item.track && item.track.id)
-        .filter(id => id !== null)
-        .slice(0, 100);
+      .map(item => item.track?.id)
+      .filter(id => id && id.length === 22)
+      .slice(0, 100);
+    
   
       if (trackIds.length === 0) {
         console.warn("No tracks found!");
