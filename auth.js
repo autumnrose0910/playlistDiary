@@ -30,7 +30,7 @@ async function redirectToSpotifyLogin() {
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: clientId,
-    scope: 'playlist-read-private playlist-read-collaborative playlist-read-public user-library-read',
+    scope: 'playlist-read-private playlist-read-collaborative user-library-read',
     redirect_uri: redirectUri,
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,
