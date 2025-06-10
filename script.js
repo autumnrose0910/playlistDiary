@@ -1,5 +1,3 @@
-// script.js (Responsive display with mobile support and flex layout)
-
 window.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('access_token');
     const loginBtn = document.getElementById('loginBtn');
@@ -82,29 +80,40 @@ window.addEventListener('DOMContentLoaded', () => {
     const artistList = stats.topArtists.map(a => `<div class="artist-item">${a[0]} <span>(${a[1]} tracks)</span></div>`).join('');
   
     resultContainer.innerHTML = `
-      <div class="results-flex" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; max-width: 900px; margin: auto;">
+      <div class="results-flex" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; margin: auto; padding: 1rem;">
   
-        <div class="playlist-info" style="flex: 1 1 250px; text-align: center; min-width: 200px;">
-          <img src="${stats.playlistImage}" alt="Playlist cover" style="width: 100%; max-width: 180px; border-radius: 12px; margin-bottom: 10px;"/>
-          <h2 style="margin: 0; font-size: 1.2rem;">${stats.playlistName}</h2>
-          <p style="margin: 4px 0; font-style: italic; font-size: 0.9rem;">by ${stats.ownerName}</p>
+        <div style="display: flex; flex-direction: column; gap: 1rem;" class="results-grid">
+          <div class="playlist-info" style="flex: 1; text-align: center;">
+            <img src="${stats.playlistImage}" alt="Playlist cover" style="width: 100%; max-width: 180px; border-radius: 12px; margin-bottom: 10px;"/>
+            <h2 style="margin: 0; font-size: 1.2rem;">${stats.playlistName}</h2>
+            <p style="margin: 4px 0; font-style: italic; font-size: 0.9rem;">by ${stats.ownerName}</p>
+          </div>
+  
+          <div class="playlist-stats" style="flex: 1;">
+            <h3 style="font-size: 1.1rem;">Stats</h3>
+            <div><strong>Total Tracks:</strong> ${stats.trackCount}</div>
+            <div><strong>Average Duration:</strong> ${stats.avgDuration} min</div>
+            <div><strong>Average Popularity:</strong> ${stats.avgPopularity}/100</div>
+            <div><strong>Explicit Content:</strong> ${stats.explicitPercent}%</div>
+          </div>
+  
+          <div class="playlist-artists" style="flex: 1;">
+            <h3 style="font-size: 1.1rem;">Top Artists</h3>
+            ${artistList}
+          </div>
         </div>
   
-        <div class="playlist-stats" style="flex: 1 1 250px; min-width: 200px;">
-          <h3 style="font-size: 1.1rem;">Stats</h3>
-          <div><strong>Total Tracks:</strong> ${stats.trackCount}</div>
-          <div><strong>Average Duration:</strong> ${stats.avgDuration} min</div>
-          <div><strong>Average Popularity:</strong> ${stats.avgPopularity}/100</div>
-          <div><strong>Explicit Content:</strong> ${stats.explicitPercent}%</div>
-        </div>
-  
-        <div class="playlist-artists" style="flex: 1 1 250px; min-width: 200px;">
-          <h3 style="font-size: 1.1rem;">Top Artists</h3>
-          ${artistList}
-        </div>
-  
+        <style>
+          @media (min-width: 768px) {
+            .results-grid {
+              flex-direction: row;
+              justify-content: space-between;
+            }
+          }
+        </style>
       </div>
     `;
   }
+  
   
   
