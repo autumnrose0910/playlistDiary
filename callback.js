@@ -1,5 +1,5 @@
-const clientId = 'YOUR_CLIENT_ID';
-const redirectUri = 'https://your-vercel-site.vercel.app/callback'; // exact match with Spotify app
+const clientId = '202e43b25213442bb4c7e81dce7ba60f';
+const redirectUri = 'https://playlist-diary.vercel.app/callback'; // exact match with Spotify app
 const codeVerifier = localStorage.getItem('code_verifier');
 
 const urlParams = new URLSearchParams(window.location.search);
