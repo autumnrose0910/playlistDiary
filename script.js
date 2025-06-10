@@ -1,3 +1,5 @@
+// script.js (Responsive display with mobile support and flex layout)
+
 window.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('access_token');
     const loginBtn = document.getElementById('loginBtn');
@@ -77,22 +79,32 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-    const artistList = stats.topArtists.map(a => `<li>${a[0]} (${a[1]} tracks)</li>`).join('');
+    const artistList = stats.topArtists.map(a => `<div class="artist-item">${a[0]} <span>(${a[1]} tracks)</span></div>`).join('');
   
     resultContainer.innerHTML = `
-      <div class="playlist-header">
-        <img src="${stats.playlistImage}" alt="Playlist cover" style="width: 150px; border-radius: 12px; margin-bottom: 10px;"/>
-        <h2>${stats.playlistName}</h2>
-        <p>by ${stats.ownerName}</p>
+      <div class="results-flex" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; max-width: 900px; margin: auto;">
+  
+        <div class="playlist-info" style="flex: 1 1 250px; text-align: center; min-width: 200px;">
+          <img src="${stats.playlistImage}" alt="Playlist cover" style="width: 100%; max-width: 180px; border-radius: 12px; margin-bottom: 10px;"/>
+          <h2 style="margin: 0; font-size: 1.2rem;">${stats.playlistName}</h2>
+          <p style="margin: 4px 0; font-style: italic; font-size: 0.9rem;">by ${stats.ownerName}</p>
+        </div>
+  
+        <div class="playlist-stats" style="flex: 1 1 250px; min-width: 200px;">
+          <h3 style="font-size: 1.1rem;">Stats</h3>
+          <div><strong>Total Tracks:</strong> ${stats.trackCount}</div>
+          <div><strong>Average Duration:</strong> ${stats.avgDuration} min</div>
+          <div><strong>Average Popularity:</strong> ${stats.avgPopularity}/100</div>
+          <div><strong>Explicit Content:</strong> ${stats.explicitPercent}%</div>
+        </div>
+  
+        <div class="playlist-artists" style="flex: 1 1 250px; min-width: 200px;">
+          <h3 style="font-size: 1.1rem;">Top Artists</h3>
+          ${artistList}
+        </div>
+  
       </div>
-      <ul>
-        <li><strong>Total Tracks:</strong> ${stats.trackCount}</li>
-        <li><strong>Average Duration:</strong> ${stats.avgDuration} minutes</li>
-        <li><strong>Average Popularity:</strong> ${stats.avgPopularity}/100</li>
-        <li><strong>Explicit Content:</strong> ${stats.explicitPercent}%</li>
-      </ul>
-      <h3>Top Artists</h3>
-      <ul>${artistList}</ul>
     `;
-  }  
+  }
+  
   
