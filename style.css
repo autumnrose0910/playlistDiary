@@ -59,7 +59,8 @@ body {
   
   #resultContainer {
     margin-top: 2rem;
-  }
+    width: 100%;
+  }  
 
   .results-flex {
     display: flex;
@@ -73,19 +74,22 @@ body {
   .results-grid {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
+    width: 100%;
   }
   
   @media (min-width: 768px) {
     .results-grid {
       flex-direction: row;
       justify-content: space-between;
+      align-items: flex-start;
+    }
+  
+    .results-grid > div {
+      flex: 1;
+      margin: 0 0.5rem;
     }
   }
   
-  .results-grid > div {
-    flex: 1;
-    min-width: 0;
-  }
   
   
