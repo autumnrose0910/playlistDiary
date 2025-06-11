@@ -36,9 +36,19 @@ window.addEventListener('DOMContentLoaded', () => {
   
     try {
       const playlistRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, { headers });
+      if (playlistRes.status === 401) {
+        localStorage.removeItem('access_token');
+        showReconnectModal();
+        return;
+      }
       const playlistMeta = await playlistRes.json();
   
       const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { headers });
+      if (res.status === 401) {
+        localStorage.removeItem('access_token');
+        showReconnectModal();
+        return;
+      }
       const data = await res.json();
   
       const trackItems = data.items
@@ -69,6 +79,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return null;
     }
   }
+  
   
   function displayStats(stats) {
     const resultContainer = document.getElementById('resultContainer');
