@@ -30,6 +30,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const match = url.match(/playlist\/([a-zA-Z0-9]+)(\?si=.*)?/);
     return match ? match[1] : null;
   }
+
+  function showReconnectModal() {
+    const modal = document.getElementById('tokenExpiredModal');
+    if (modal) modal.style.display = 'flex';
+  }
   
   async function fetchPlaylistMetadata(playlistId, token) {
     const headers = { Authorization: `Bearer ${token}` };
