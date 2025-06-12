@@ -16,6 +16,15 @@
       <input type="text" id="playlistInput" placeholder="Paste Spotify playlist link..." />
       <button id="analyzeBtn">Analyze</button>
     </div>
+
+    <div id="tokenExpiredModal">
+        <div class="modal-content">
+          <h2>Session Expired</h2>
+          <p>Your Spotify session has expired. Please reconnect.</p>
+          <button onclick="window.location.reload()">Reconnect</button>
+        </div>
+      </div>
+      
     
     <div id="resultContainer"></div>
   </div>
